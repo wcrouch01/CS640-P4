@@ -5,8 +5,17 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.openflow.protocol.OFMatch;
+import org.openflow.protocol.OFMatchField;
+import org.openflow.protocol.OFOXMFieldType;
+import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionOutput;
+import org.openflow.protocol.instruction.OFInstruction;
+import org.openflow.protocol.instruction.OFInstructionApplyActions;
+import org.openflow.protocol.instruction.OFInstructionType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
