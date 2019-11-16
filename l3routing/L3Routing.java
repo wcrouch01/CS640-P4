@@ -63,7 +63,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
     // Map of hosts to devices
 	private Map<IDevice,Host> knownHosts;
 	
-	private Graph graph;
+	//private Graph graph;
     
     private HashMap<ArrayList<IOFSwitch>, IOFSwitch> shortestPaths;
     
