@@ -49,7 +49,13 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
     public static byte table;
     
     // Map of hosts to devices
-    private Map<IDevice,Host> knownHosts;
+	private Map<IDevice,Host> knownHosts;
+	
+	private Graph graph;
+    
+    private HashMap<ArrayList<IOFSwitch>, IOFSwitch> shortestPaths;
+    
+    public boolean DEBUG = false;
 
 	/**
      * Loads dependencies and initializes data structures.
@@ -358,12 +364,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
         floodlightService.add(IDeviceService.class);
         return floodlightService;
 	}
-	private void bellmanFord(Host Hostsrc)
-	{
-		SwitchNode tmp;
-		List<SwitchNode> switches = new ArrayList<SwitchNode>();
-		
-	}
+
 	public void installRulesHost(Host host){
 		if(host.isAttachedToSwitch()){
 			IOFSwitch connectedSwitch = host.getSwitch();
