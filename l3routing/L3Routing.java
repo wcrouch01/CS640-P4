@@ -406,11 +406,11 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 			}
 		}
 	}
-	public OFMatch setOFMatch(host h)
+	public OFMatch setOFMatch(Host h)
 	{
 		OFMatch mc = new OFMatch();
 		mc.setDataLayerType(OFMatch.ETH_TYPE_IPV4);
-		mc.setNetworkDestination(host.getIPv4Address());
+		mc.setNetworkDestination(h.getIPv4Address());
 		return mc;
 	}
 	public void rmRules(Host h){
