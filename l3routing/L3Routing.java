@@ -379,30 +379,25 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 			
 			
 			
-			for(IOFSwitch sw : getSwitches().values()){
+			for(IOFSwitch swi : getSwitches().values()){
 				ArrayList<IOFSwitch> pair = new ArrayList<IOFSwitch>();
-				pair.add(sw);
+				pair.add(swi);
 				pair.add(cs);
 				
-				OFActionOutput ofActionOutput = new OFActionOutput();
-
-				if(sw.getId() != cs.getId()){
-					IOFSwitch nextSwitch = graph.get(pair);
-					ofActionOutput.setPort(getConnectedPort(sw, nextSwitch));
+				OFActionOutput oac = new OFActionOutput();
+				ArrayList<OFInstruction> instructions = new ArrayList<OFInstruction>();
+				ArrayList<OFAction> oa = new ArrayList <OFAction>();
+				if(cs.getId() == swi.getId()){
+					oac.setPort(host.getPort());
 					
 				}
 				else{
-					ofActionOutput.setPort(host.getPort());
+					IOFSwitch ns = graph.get(pair);
+					oac.setPort(getConnectedPort(swi, ns));
 				}
-				
-				ArrayList<OFAction> ofActions = new ArrayList <OFAction>();
-				ofActions.add(ofActionOutput);
-				
-				OFInstructionApplyActions applyActions = new OFInstructionApplyActions(ofActions);
-				ArrayList<OFInstruction> listOfInstructions = new ArrayList<OFInstruction>();
-				listOfInstructions.add(applyActions);
-				
-				SwitchCommands.installRule(sw, table, SwitchCommands.DEFAULT_PRIORITY, om, listOfInstructions);
+				oa.add(oac);
+				instructions.add(new OFInstructionApplyActions(oa));
+				SwitchCommands.installRule(swi, table, SwitchCommands.DEFAULT_PRIORITY, om, instructions);
 			}
 		}
 	}
