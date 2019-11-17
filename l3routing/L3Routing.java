@@ -476,7 +476,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 					{
 						IOFSwitch switchDST = getSwitches().get(l.getDst());
 						IOFSwitch switchSRC = getSwitches().get(l.getSrc());
-						if(dist.get(switchDST) - 1 >= dist.get(switchSRC))
+						if(dist.get(switchSRC) + 1 < dist.get(switchDST))
 						{
 							dist.put(switchDST, dist.get(switchSRC) + 1);
 							pred.put(switchDST, switchSRC);
