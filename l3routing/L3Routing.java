@@ -62,12 +62,14 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
     
     // Map of hosts to devices
 	private Map<IDevice,Host> knownHosts;
+
+	private int infinity = 100000;
 	
 	//private Graph graph;
     
-    private HashMap<ArrayList<IOFSwitch>, IOFSwitch> shortestPaths;
+    private HashMap<ArrayList<IOFSwitch>, IOFSwitch> graph;
     
-    public boolean DEBUG = false;
+    
 
 	/**
      * Loads dependencies and initializes data structures.
@@ -142,8 +144,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 			/* TODO: Update routing: add rules to route to new host          */
 			
 			/*****************************************************************/
-			if(DEBUG)
-				System.out.println("***Device Added : "+host.getName());
+			
 			installRulesHost(host);
 		}
 	}
@@ -196,8 +197,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 		/* TODO: Update routing: change rules to route to host               */
 		
 		/*********************************************************************/
-		if(DEBUG)
-			System.out.println("***Device Moved : "+host.getName());
+		
 		removeRulesHost(host);
 		installRulesHost(host);
 	}
@@ -263,11 +263,8 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 		/* TODO: Update routing: change routing rules for all hosts          */
 		
 		/*********************************************************************/
-		if(DEBUG)
-			System.out.println("***Computing the shortest paths after link discovery");
-		shortestPaths = computeShortestPaths();
-		if(DEBUG)
-			System.out.println("***Installing rules");
+		
+		graph = bellmanFord();
 		installRulesAll();
 	}
 
@@ -390,10 +387,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 			OFMatch ofMatch = new OFMatch();
 			ofMatch.setMatchFields(matchFields);
 			
-			if(DEBUG){
-				System.out.println("***installing rules for with Host IP address: " + IPv4.fromIPv4Address(host.getIPv4Address()) + "\tConnected to switch " + connectedSwitch.getId());
-				System.out.println();
-			}
+			
 			
 			for(IOFSwitch sw : getSwitches().values()){
 				ArrayList<IOFSwitch> switchTuple = new ArrayList<IOFSwitch>();
@@ -403,11 +397,9 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 				OFActionOutput ofActionOutput = new OFActionOutput();
 
 				if(sw.getId() != connectedSwitch.getId()){
-					IOFSwitch nextSwitch = shortestPaths.get(switchTuple);
+					IOFSwitch nextSwitch = graph.get(switchTuple);
 					ofActionOutput.setPort(getConnectedPort(sw, nextSwitch));
-					if(DEBUG){
-						System.out.println("***Host " + host.getName() + "\tInstalling for switch " + sw.getId() + "\tNext switch in path " + nextSwitch.getId());
-					}
+					
 				}
 				else{
 					ofActionOutput.setPort(host.getPort());
@@ -459,43 +451,48 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 		
 		return 0;
 	}
-	public HashMap<ArrayList<IOFSwitch>, IOFSwitch> computeShortestPaths(){
+	public HashMap<ArrayList<IOFSwitch>, IOFSwitch> bellmanFord(){
 		
-		HashMap<ArrayList<IOFSwitch>, IOFSwitch> allPairsSuccesors = new HashMap<ArrayList<IOFSwitch>, IOFSwitch>();
+		HashMap<ArrayList<IOFSwitch>, IOFSwitch> finalPairs = new HashMap<ArrayList<IOFSwitch>, IOFSwitch>();
 
-		for(IOFSwitch srcSw : getSwitches().values()){
-			HashMap<IOFSwitch, Integer> distances = new HashMap<IOFSwitch, Integer>();
-			HashMap<IOFSwitch, IOFSwitch> predecessors = new HashMap<IOFSwitch, IOFSwitch>();
+		for(IOFSwitch source : getSwitches().values()){
+			HashMap<IOFSwitch, IOFSwitch> pred = new HashMap<IOFSwitch, IOFSwitch>();
+			HashMap<IOFSwitch, Integer> dist = new HashMap<IOFSwitch, Integer>();
 			
-			for(IOFSwitch dstSw : getSwitches().values()){
-				distances.put(dstSw, Integer.MAX_VALUE - 1);
-				predecessors.put(dstSw, null);
+			//set values to 0 and infinity
+			for(IOFSwitch dest : getSwitches().values()){
+				pred.put(dest, null);
+				dist.put(dest, infinity);
+				
 			}
 			
-			distances.put(srcSw, 0);
+			dist.put(source, 0);
 			
-			for(IOFSwitch dstSw : getSwitches().values()){
-				if(dstSw == srcSw)
-					continue;
-				
-				for(Link link: getLinks()){
-					IOFSwitch sw1 = getSwitches().get(link.getSrc());
-					IOFSwitch sw2 = getSwitches().get(link.getDst());
-					if(distances.get(sw1) + 1 < distances.get(sw2)){
-						distances.put(sw2, distances.get(sw1) + 1);
-						predecessors.put(sw2, sw1);
-					}
+			for(IOFSwitch dest : getSwitches().values())
+			{
+				if(source != dest)
+				{
+					for(Link l: getLinks())
+					{
+						IOFSwitch switchDST = getSwitches().get(l.getDst());
+						IOFSwitch switchSRC = getSwitches().get(l.getSrc());
+						if(dist.get(switchDST) - 1 >= dist.get(switchSRC))
+						{
+							dist.put(switchDST, dist.get(switchSRC) + 1);
+							pred.put(switchDST, switchSRC);
+						}
 
+					}
 				}
 			}
-			for(IOFSwitch dstSw : getSwitches().values()){
-				ArrayList<IOFSwitch> swTuple = new ArrayList<IOFSwitch>();
-				swTuple.add(dstSw);
-				swTuple.add(srcSw);
-				allPairsSuccesors.put(swTuple, predecessors.get(dstSw));
+			for(IOFSwitch dest : getSwitches().values()){
+				ArrayList<IOFSwitch> switchPair = new ArrayList<IOFSwitch>();
+				switchPair.add(dest);
+				switchPair.add(source);
+				finalPairs.put(switchPair, pred.get(dest));
 			}
 			
 		}
-		return allPairsSuccesors;
+		return finalPairs;
 	}
 }
