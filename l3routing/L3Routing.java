@@ -375,7 +375,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 	public void installRule(Host host){
 		if(host.isAttachedToSwitch()){
 			IOFSwitch cs = host.getSwitch();
-			OFMatch om = setOFMatch(h);
+			OFMatch om = setOFMatch(host);
 			
 			
 			
