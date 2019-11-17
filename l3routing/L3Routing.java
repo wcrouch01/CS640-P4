@@ -64,8 +64,6 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 	private Map<IDevice,Host> knownHosts;
 
 	private int infinity = 100000;
-	
-	//private Graph graph;
     
     private HashMap<ArrayList<IOFSwitch>, IOFSwitch> graph;
     
@@ -145,7 +143,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 			
 			/*****************************************************************/
 			
-			installRulesHost(host);
+			installRule(host);
 		}
 	}
 
@@ -168,7 +166,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 		/* TODO: Update routing: remove rules to route to host               */
 		
 		/*********************************************************************/
-		removeRulesHost(host);
+		rmRules(host);
 	}
 
 	/**
@@ -198,8 +196,8 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 		
 		/*********************************************************************/
 		
-		removeRulesHost(host);
-		installRulesHost(host);
+		rmRules(host);
+		installRule(host);
 	}
 	
     /**
@@ -265,7 +263,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 		/*********************************************************************/
 		
 		graph = bellmanFord();
-		installRulesAll();
+		installAll();
 	}
 
 	/**
@@ -374,30 +372,22 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
         return floodlightService;
 	}
 
-	public void installRulesHost(Host host){
+	public void installRule(Host host){
 		if(host.isAttachedToSwitch()){
-			IOFSwitch connectedSwitch = host.getSwitch();
-			
-			OFMatchField field1 = new OFMatchField(OFOXMFieldType.ETH_TYPE, Ethernet.TYPE_IPv4);
-			OFMatchField field2 = new OFMatchField(OFOXMFieldType.IPV4_DST, host.getIPv4Address());
-			ArrayList<OFMatchField> matchFields = new ArrayList<OFMatchField>();
-			matchFields.add(field1);
-			matchFields.add(field2);
-			
-			OFMatch ofMatch = new OFMatch();
-			ofMatch.setMatchFields(matchFields);
+			IOFSwitch cs = host.getSwitch();
+			OFMatch om = setOFMatch(h);
 			
 			
 			
 			for(IOFSwitch sw : getSwitches().values()){
-				ArrayList<IOFSwitch> switchTuple = new ArrayList<IOFSwitch>();
-				switchTuple.add(sw);
-				switchTuple.add(connectedSwitch);
+				ArrayList<IOFSwitch> pair = new ArrayList<IOFSwitch>();
+				pair.add(sw);
+				pair.add(cs);
 				
 				OFActionOutput ofActionOutput = new OFActionOutput();
 
-				if(sw.getId() != connectedSwitch.getId()){
-					IOFSwitch nextSwitch = graph.get(switchTuple);
+				if(sw.getId() != cs.getId()){
+					IOFSwitch nextSwitch = graph.get(pair);
 					ofActionOutput.setPort(getConnectedPort(sw, nextSwitch));
 					
 				}
@@ -412,27 +402,26 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 				ArrayList<OFInstruction> listOfInstructions = new ArrayList<OFInstruction>();
 				listOfInstructions.add(applyActions);
 				
-				SwitchCommands.installRule(sw, table, SwitchCommands.DEFAULT_PRIORITY, ofMatch, listOfInstructions);
+				SwitchCommands.installRule(sw, table, SwitchCommands.DEFAULT_PRIORITY, om, listOfInstructions);
 			}
 		}
 	}
-	public void removeRulesHost(Host host){
-		OFMatchField field1 = new OFMatchField(OFOXMFieldType.ETH_TYPE, Ethernet.TYPE_IPv4);
-		OFMatchField field2 = new OFMatchField(OFOXMFieldType.IPV4_DST, host.getIPv4Address());
-		ArrayList<OFMatchField> matchFields = new ArrayList<OFMatchField>();
-		matchFields.add(field1);
-		matchFields.add(field2);
-		
-		OFMatch ofMatch = new OFMatch();
-		ofMatch.setMatchFields(matchFields);
-		
-		for(IOFSwitch sw : getSwitches().values()){
-			SwitchCommands.removeRules(sw, table, ofMatch);
+	public OFMatch setOFMatch(host h)
+	{
+		OFMatch mc = new OFMatch();
+		mc.setDataLayerType(OFMatch.ETH_TYPE_IPV4);
+		mc.setNetworkDestination(host.getIPv4Address());
+		return mc;
+	}
+	public void rmRules(Host h){
+		OFMatch om = setOFMatch(h);
+		for(IOFSwitch switch1 : getSwitches().values()){
+			SwitchCommands.removeRules(switch1, table, om);
 		}
 	}
-	public void installRulesAll(){
+	public void installAll(){
 		for(Host host : getHosts()){
-			installRulesHost(host);
+			installRule(host);
 		}
 		
 	}
