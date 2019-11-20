@@ -393,7 +393,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 				}
 				else{
 					IOFSwitch ns = graph.get(pair);
-					oac.setPort(getConnectedPort(swi, ns));
+					oac.setPort(PortGet(swi, ns));
 				}
 				oa.add(oac);
 				instructions.add(new OFInstructionApplyActions(oa));
@@ -420,16 +420,16 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 		}
 		
 	}
-	public int getConnectedPort(IOFSwitch sw1, IOFSwitch sw2){
-		for(Link link : getLinks()){
-			if((sw1.getId() == link.getSrc()) &&
-					(sw2.getId() == link.getDst())){
-				return link.getSrcPort();
+	public int PortGet(IOFSwitch switch1, IOFSwitch switch2){
+		for(Link l : getLinks())
+		{
+			if((l.getDst() == switch1.getId()) && (l.getSrc() == switch2.getId()))
+			{
+				return l.getDstPort();
 			}
-
-			if((sw2.getId() == link.getSrc()) &&
-					(sw1.getId() == link.getDst())){
-				return link.getDstPort();
+			if((l.getDst() == switch2.getId()) && (l.getSrc() == switch1.getId()))
+			{
+				return l.getSrcPort();
 			}
 		}
 		
