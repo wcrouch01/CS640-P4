@@ -218,7 +218,7 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 		{
 			IPv4 i = (IPv4) e.getPayload();
 			if(i.getProtocol() == IPv4.PROTOCOL_TCP){
-				TCP t = (TCP) t.getPayload();
+				TCP t = (TCP) i.getPayload();
 				if(t.getFlags() == TCP_FLAG_SYN)
 				{
 					processTCPIN(sw, i);
