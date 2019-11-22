@@ -393,7 +393,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 				}
 				else{
 					IOFSwitch ns = graph.get(pair);
-					if (swi == null || ns == null) { console.log("Look at line 396!"); }
+					if (swi == null || ns == null) { System.out.println("Look at line 396!"); }
 					oac.setPort(PortGet(swi, ns));
 				}
 				oa.add(oac);
