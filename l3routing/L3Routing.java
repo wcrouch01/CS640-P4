@@ -65,7 +65,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
 	private int infinity = 100000;
     
-    private HashMap<ArrayList<IOFSwitch>, IOFSwitch> graph;
+    private HashMap<IOFSwitch[], IOFSwitch> graph;
     
     
 
@@ -380,9 +380,6 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 			
 			
 			for(IOFSwitch swi : getSwitches().values()){
-				ArrayList<IOFSwitch> pair = new ArrayList<IOFSwitch>();
-				pair.add(swi);
-				pair.add(cs);
 				
 				OFActionOutput oac = new OFActionOutput();
 				ArrayList<OFInstruction> instructions = new ArrayList<OFInstruction>();
@@ -392,6 +389,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 					
 				}
 				else{
+					IOFSwitch[] pair = {swi, cs};
 					IOFSwitch ns = graph.get(pair);
 					if (swi == null || ns == null) { System.out.println("Look at line 396!"); }
 					oac.setPort(PortGet(swi, ns));
@@ -436,9 +434,9 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 		
 		return 0;
 	}
-	public HashMap<ArrayList<IOFSwitch>, IOFSwitch> bellmanFord(){
+	public HashMap<IOFSwitch[], IOFSwitch> bellmanFord(){
 		
-		HashMap<ArrayList<IOFSwitch>, IOFSwitch> finalPairs = new HashMap<ArrayList<IOFSwitch>, IOFSwitch>();
+		HashMap<IOFSwitch[], IOFSwitch> finalPairs = new HashMap<IOFSwitch[], IOFSwitch>();
 
 		for(IOFSwitch source : getSwitches().values()){
 			HashMap<IOFSwitch, IOFSwitch> pred = new HashMap<IOFSwitch, IOFSwitch>();
@@ -471,9 +469,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 				}
 			}
 			for(IOFSwitch dest : getSwitches().values()){
-				ArrayList<IOFSwitch> switchPair = new ArrayList<IOFSwitch>();
-				switchPair.add(dest);
-				switchPair.add(source);
+				IOFSwitch[] switchPair = {dest, source};
 				finalPairs.put(switchPair, pred.get(dest));
 			}
 			
