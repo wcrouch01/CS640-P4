@@ -153,7 +153,7 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 	//Added Method
 	public void installRules(IOFSwitch sw)
 	{
-		List<OFInstruction> inst = new List<OFInstruction>();
+		List<OFInstruction> inst = null;
 		//install a rule for each keySet (1 and 2)
 		for(Integer vIP : instances.keySet())
 		{
@@ -162,12 +162,13 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 			mc.setNetworkDestination(vIP);
 
 			OFActionOutput action = new OFActionOutput(OFPort.OFPP_CONTROLLER);
-			List<OFAction> actions = new ArrayList<OFAction>(action);
+			List<OFAction> actions = new List<OFAction>();
+			actions.add(action);
 			inst.add(new OFInstructionApplyActions(actions));
 			SwitchCommands.installRule(sw, table,(short) (SwitchCommands.DEFAULT_PRIORITY + 1), mc, inst);
 		}
 		//install blank rules for the rest (3)
-		OFmatch blank = new OFMatch();
+		OFMatch blank = new OFMatch();
 		inst = new ArrayList<OFInstruction>();
 		inst.add(new OFInstructionGotoTable(L3Routing.table));
 		SwitchCommands.installRule(sw, table, SwitchCommands.DEFAULT_PRIORITY, blank, inst);
@@ -230,7 +231,7 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 	private void processArp(Ethernet e, IOFSwitch sw, OFPacketIn p)
 	{
 		//set up necessary variables
-		short port = (short)pktIn.getInPort();
+		short port = (short)p.getInPort();
 		ARP arp = (ARP) e.getPayload();
 		int vip = IPv4.toIPv4Address(arp.getTargetProtocolAddress());
 		if(!this.instances.containsKey(vip))
@@ -293,8 +294,6 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 	{
 		TCP t = (TCP) i.getPayload();
 		int destvip = i.getDestinationAddress();
-		OFMatch mc = new OFMatch();
-
 		OFMatch mc = new OFMatch();
 		//tcp
 
