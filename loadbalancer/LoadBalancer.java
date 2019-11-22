@@ -5,7 +5,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.List;
 
+import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFPacketIn;
 import org.openflow.protocol.OFType;
@@ -22,7 +24,9 @@ import org.openflow.protocol.instruction.OFInstructionGotoTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.wisc.cs.sdn.apps.l3routing.L3Routing;
 import edu.wisc.cs.sdn.apps.util.ArpServer;
+import edu.wisc.cs.sdn.apps.util.SwitchCommands;
 
 import net.floodlightcontroller.core.FloodlightContext;
 import net.floodlightcontroller.core.IFloodlightProviderService;
@@ -149,7 +153,7 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 	//Added Method
 	public void installRules(IOFSwitch sw)
 	{
-		List<OFInstruction> inst = new ArrayList<OFInstruction>();
+		List<OFInstruction> inst = new List<OFInstruction>();
 		//install a rule for each keySet (1 and 2)
 		for(Integer vIP : instances.keySet())
 		{
