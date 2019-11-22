@@ -390,6 +390,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 				}
 				else{
 					IOFSwitch[] pair = {swi, cs};
+					
 					IOFSwitch ns = graph.get(pair);
 					if (swi == null || ns == null) { System.out.println("Look at line 396!"); }
 					oac.setPort(PortGet(swi, ns));
@@ -419,7 +420,12 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 		}
 		
 	}
+	
 	public int PortGet(IOFSwitch switch1, IOFSwitch switch2){
+		if (switch1 == null || switch2 == null) {
+			return 0;
+		}
+
 		for(Link l : getLinks())
 		{
 			if((l.getDst() == switch1.getId()) && (l.getSrc() == switch2.getId()))
