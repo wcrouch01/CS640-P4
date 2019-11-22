@@ -162,7 +162,7 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 			mc.setNetworkDestination(vIP);
 
 			OFActionOutput action = new OFActionOutput(OFPort.OFPP_CONTROLLER);
-			List<OFAction> actions = new List<OFAction>();
+			List<OFAction> actions = new ArrayList<OFAction>();
 			actions.add(action);
 			inst.add(new OFInstructionApplyActions(actions));
 			SwitchCommands.installRule(sw, table,(short) (SwitchCommands.DEFAULT_PRIORITY + 1), mc, inst);
