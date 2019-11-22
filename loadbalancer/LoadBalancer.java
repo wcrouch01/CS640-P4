@@ -249,11 +249,56 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 	private void processTCPIN(IOFSwitch sw, IPv4 i )
 	{
 		TCP t = (TCP) i.getPayload();
+		int destvip = i.getDestinationAddress();
+		OFMatch mc = new OFMatch();
+		//tcp
+		mc.setNetworkProtocol(OFMatch.IP_PROTO_TCP);
+		mc.setTransportSource(OFMatch.IP_PROTO_TCP, t.getSourcePort());
+		mc.setTransportDestination(OFMatch.IP_PROTO_TCP, t.getDestinationPort());
+		//ip
+		mc.setDataLayerType(Ethernet.TYPE_IPv4);
+		mc.setNetworkSource(i.getSourceAddress());
+		mc.setNetworkDestination(destvip);
 
+		int openCon = this.instances.get(destvip).getNextHostIP();
+		List<OFAction> actions = new ArrayList<OFAction>();
+		actions.add(new OFActionSetField(OFOXMFieldType.IPV4_DST, openCon));
+		actions.add(new OFActionSetField(OFOXMFieldType.ETH_DST, this.getHostMACAddress(openCon)));
+		List<OFInstruction> instructions = new ArrayList<OFInstruction>();
+		instructions.add(new OFInstructionApplyActions(actions));
+		//add the default case
+		instructions.add(new OFInstructionGotoTable(L3Routing.table));
+
+		SwitchCommands.installRule(sw, table, (short)(SwitchCommands.DEFAULT_PRIORITY + 2), mc,
+				instructions, SwitchCommands.NO_TIMEOUT, IDLE_TIMEOUT);
 	}
 	private void processTCPOUT(IOFSwitch sw, IPv4 i )
 	{
-		
+		TCP t = (TCP) i.getPayload();
+		int destvip = i.getDestinationAddress();
+		OFMatch mc = new OFMatch();
+
+		OFMatch mc = new OFMatch();
+		//tcp
+
+		mc.setNetworkProtocol(OFMatch.IP_PROTO_TCP);
+		mc.setTransportSource(OFMatch.IP_PROTO_TCP, t.getDestinationPort());
+		mc.setTransportDestination(OFMatch.IP_PROTO_TCP, t.getSourcePort());
+		//ip
+		int openCon = this.instances.get(destvip).getNextHostIP();
+		mc.setDataLayerType(Ethernet.TYPE_IPv4);
+		mc.setNetworkSource(openCon);
+		mc.setNetworkDestination(i.getSourceAddress());
+
+		List<OFAction> actions = new ArrayList<OFAction>();
+		actions.add(new OFActionSetField(OFOXMFieldType.IPV4_SRC, destvip));
+		actions.add(new OFActionSetField(OFOXMFieldType.ETH_SRC, this.instances.get(destvip).getVirtualMAC()));
+		List<OFInstruction> instructions = new ArrayList<OFInstruction>();
+		instructions.add(new OFInstructionApplyActions(actions));
+		//add the default case
+		instructions.add(new OFInstructionGotoTable(L3Routing.table));
+		SwitchCommands.installRule(sw, table, (short)(SwitchCommands.DEFAULT_PRIORITY + 2), mc,
+				instructions, SwitchCommands.NO_TIMEOUT, IDLE_TIMEOUT);
 	}
 	
 	/**
