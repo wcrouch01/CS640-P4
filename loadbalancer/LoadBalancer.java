@@ -131,6 +131,30 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 		/*       (3) all other packets to the next rule table in the switch  */
 		
 		/*********************************************************************/
+		installRules(sw);
+	}
+	//Added Method
+	public void installRules(IOFSwitch sw)
+	{
+		List<OFInstruction> inst = new ArrayList<OFInstruction>();
+		//install a rule for each keySet (1 and 2)
+		for(Integer vIP : instances.keySet())
+		{
+			OFMatch mc = new OFMatch();
+			mc.setDataLayerType(OFMatch.ETH_TYPE_IPV4);
+			mc.setNetworkDestination(vIP);
+
+			OFActionOutput action = new OFActionOutput(OFPort.OFPP_CONTROLLER);
+			List<OFAction> actions = new ArrayList<OFAction>(action);
+			inst.add(new OFInstructionApplyActions(actions));
+			SwitchCommands.installRule(sw, table,(short) (SwitchCommands.DEFAULT_PRIORITY + 1), mc, inst);
+		}
+		//install blank rules for the rest (3)
+		OFmatch blank = new OFMatch();
+		inst = new ArrayList<OFInstruction>();
+		inst.add(new OFInstructionGotoTable(L3Routing.table));
+		SwitchCommands.installRule(sw, table, SwitchCommands.DEFAULT_PRIORITY, blank, inst);
+
 	}
 	
 	/**
@@ -161,10 +185,75 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 		/*       ignore all other packets                                    */
 		
 		/*********************************************************************/
-
+		processPackets(sw, ethPkt, pktIn);
 		
 		// We don't care about other packets
 		return Command.CONTINUE;
+	}
+	//determins which packs we work with
+	public void processPackets(IOFSwitch sw, Ethernet e, OFPacketIn p)
+	{
+		if(e.getEtherType() == Ethernet.TYPE_ARP){
+			processArp(e, sw, p);
+		}
+		if(e.getEtherType() == Ethernet.TYPE_IPv4)
+		{
+			IPv4 i = (IPv4) e.getPayload();
+			if(i.getProtocol() == IPv4.PROTOCOL_TCP){
+				TCP t = (TCP) t.getPayload();
+				if(t.getFlags() == TCP_FLAG_SYN)
+				{
+					processTCPIN(sw, i);
+					processTCPOUT(sw, i);
+				}
+			}
+		}
+		return;
+	}
+	private void processArp(Ethernet e, IOFSwitch sw, OFPacketIn p)
+	{
+		//set up necessary variables
+		short port = (short)pktIn.getInPort();
+		ARP arp = (ARP) e.getPayload();
+		int vip = IPv4.toIPv4Address(arp.getTargetProtocolAddress());
+		if(!this.instances.containsKey(vip))
+		{
+			return;
+		}
+		byte[] macAdd = this.instances.get(vip).getVirtualMAC();
+		ARP repPack = new ARP();
+		Ethernet ethPack = new Ethernet();
+		//setup the arp header
+		repPack.setOpCode(ARP.OP_REPLY);
+			//arp Hardware
+			repPack.setHardwareType(arp.getHardwareType());
+			repPack.setTargetHardwareAddress(arp.getSenderHardwareAddress());
+			repPack.setHardwareAddressLength(arp.getHardwareAddressLength());
+			repPack.setSenderHardwareAddress(macAdd);
+			//arp protocol
+			repPack.setTargetProtocolAddress(arp.getSenderProtocolAddress());
+			repPack.setProtocolType(arp.getProtocolType());
+			repPack.setProtocolAddressLength(arp.getProtocolAddressLength());
+			repPack.setSenderProtocolAddress(vip);
+		//Set up the ethernet header
+		ethPack.setEtherType(Ethernet.TYPE_ARP);
+		ethPack.setSourceMACAddress(macAdd);
+		ethPack.setDestinationMACAddress(e.getSourceMACAddress());
+
+		//combine
+		ethPack.setPayload(repPack);
+		SwitchCommands.sendPacket(sw, port, ethPack);
+		
+
+	}
+	private void processTCPIN(IOFSwitch sw, IPv4 i )
+	{
+		TCP t = (TCP) i.getPayload();
+
+	}
+	private void processTCPOUT(IOFSwitch sw, IPv4 i )
+	{
+		
 	}
 	
 	/**
