@@ -376,9 +376,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 		if(host.isAttachedToSwitch()){
 			IOFSwitch cs = host.getSwitch();
 			OFMatch om = setOFMatch(host);
-			
-			
-			
+						
 			for(IOFSwitch swi : getSwitches().values()){
 				
 				OFActionOutput oac = new OFActionOutput();
@@ -399,6 +397,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 					if (port == 0) { 
 						System.out.println("Warning: PORT not found in Bellman-Ford graph. PORT not set. Entry in map:" + ns); 
 						printBellmanFord();
+						oac.setPort(0);
 					}
 					else { oac.setPort(port); }
 				}
