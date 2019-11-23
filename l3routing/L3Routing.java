@@ -391,7 +391,10 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 					IOFSwitch[] pair = {swi, cs};
 					IOFSwitch ns = graph.get(pair);
 					int port = PortGet(swi, ns);
-					if (port == 0) { System.out.println("Warning: PORT not found in Bellman-Ford graph. PORT not set. Entry in map:" + ns); }
+					if (port == 0) { 
+						System.out.println("Warning: PORT not found in Bellman-Ford graph. PORT not set. Entry in map:" + ns); 
+						printBellmanFord();
+					}
 					else { oac.setPort(port); }
 				}
 				oa.add(oac);
@@ -439,6 +442,18 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 		
 		return 0;
 	}
+
+	public void printBellmanFord() {
+		System.out.println("Current BellmanFord graph");
+		for (Map.Entry<IOFSwitch[], IOFSwitch> entry : graph.entrySet()) {
+			IOFSwitch[] key = entry.getKey();
+			String src = key[0].getStringId();
+			String dest = key[1].getStringId();
+			String next = entry.getValue().getStringId();
+			System.out.println("Entry: Src: " + src + " Dest: " + dest + " Next: " + next);
+		}
+	}
+
 	public HashMap<IOFSwitch[], IOFSwitch> bellmanFord(){
 		
 		HashMap<IOFSwitch[], IOFSwitch> finalPairs = new HashMap<IOFSwitch[], IOFSwitch>();
