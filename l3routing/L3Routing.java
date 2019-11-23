@@ -489,6 +489,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 				}
 			}
 			for(IOFSwitch dest : getSwitches().values()){
+				if (dest == source) {continue;}
 				IOFSwitch[] switchPair = {dest, source};
 				finalPairs.put(switchPair, pred.get(dest));
 			}
