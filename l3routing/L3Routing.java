@@ -452,8 +452,8 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 		System.out.println("Current BellmanFord graph");
 		for (Map.Entry<IOFSwitch[], IOFSwitch> entry : graph.entrySet()) {
 			IOFSwitch[] key = entry.getKey();
-			String src = key[0].getStringId();
-			String dest = key[1].getStringId();
+			String dest = key[0].getStringId();
+			String src = key[1].getStringId();
 			String next = entry.getValue() == null ? "null" : entry.getValue().getStringId();
 			System.out.println("Entry: Src: " + src + " Dest: " + dest + " Next: " + next);
 		}
