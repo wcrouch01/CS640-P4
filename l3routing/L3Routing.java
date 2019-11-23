@@ -392,7 +392,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 					//
 					String src = swi.getStringId();
 					String dest = cs.getStringId();
-					System.out.println("Entry: Src: " + src + " Dest: " + dest);
+					System.out.println("Looking up Entry: Src: " + src + " Dest: " + dest);
 					//
 					IOFSwitch ns = graph.get(pair);
 					int port = PortGet(swi, ns);
