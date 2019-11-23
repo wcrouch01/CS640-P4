@@ -390,13 +390,13 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 					//
 					String src = swi.getStringId();
 					String dest = cs.getStringId();
-					System.out.println("Looking up Entry: Src: " + src + " Dest: " + dest);
+					//System.out.println("Looking up Entry: Src: " + src + " Dest: " + dest);
 					//
 					IOFSwitch ns = graph.get(src + "=>" + dest);
 					int port = PortGet(swi, ns);
 					if (port == -1) { 
-						System.out.println("Warning: PORT not found in Bellman-Ford graph. PORT not set. Entry in map:" + ns.getStringId()); 
-						printBellmanFord();
+						//System.out.println("Warning: PORT not found in Bellman-Ford graph. PORT not set. Entry in map:" + ns.getStringId()); 
+						//printBellmanFord();
 					}
 					else { oac.setPort(port); }
 				}
