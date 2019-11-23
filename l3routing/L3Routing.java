@@ -65,7 +65,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
 	private int infinity = 100000;
     
-    private HashMap<IOFSwitch[], IOFSwitch> graph;
+    private HashMap<String, IOFSwitch> graph;
     
     
 
@@ -392,7 +392,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 					String dest = cs.getStringId();
 					System.out.println("Looking up Entry: Src: " + src + " Dest: " + dest);
 					//
-					IOFSwitch ns = graph.get(pair);
+					IOFSwitch ns = graph.get(src + "=>" + dest);
 					int port = PortGet(swi, ns);
 					if (port == 0) { 
 						System.out.println("Warning: PORT not found in Bellman-Ford graph. PORT not set. Entry in map:" + ns); 
@@ -449,18 +449,16 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
 	public void printBellmanFord() {
 		System.out.println("Current BellmanFord graph");
-		for (Map.Entry<IOFSwitch[], IOFSwitch> entry : graph.entrySet()) {
-			IOFSwitch[] key = entry.getKey();
-			String dest = key[0].getStringId();
-			String src = key[1].getStringId();
-			String next = entry.getValue() == null ? "null" : entry.getValue().getStringId();
-			System.out.println("Entry: Src: " + src + " Dest: " + dest + " Next: " + next);
+		for (Map.Entry<String, IOFSwitch> entry : graph.entrySet()) {
+			String key = entry.getKey();
+			String next = entry.getValue() == null ? "null" : entry.getValue();
+			System.out.println("Entry: Key: " + key + " Next: " + next);
 		}
 	}
 
-	public HashMap<IOFSwitch[], IOFSwitch> bellmanFord(){
+	public HashMap<String, IOFSwitch> bellmanFord(){
 		
-		HashMap<IOFSwitch[], IOFSwitch> finalPairs = new HashMap<IOFSwitch[], IOFSwitch>();
+		HashMap<String, IOFSwitch> finalPairs = new HashMap<String, IOFSwitch>();
 
 		for(IOFSwitch source : getSwitches().values()){
 			HashMap<IOFSwitch, IOFSwitch> pred = new HashMap<IOFSwitch, IOFSwitch>();
@@ -493,12 +491,11 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 				}
 			}
 			for(IOFSwitch dest : getSwitches().values()){
+				String entry = source.getStringId() + "=>" + dest.getStringId();
 				if (dest == source) {
-					IOFSwitch[] switchPair = {dest, source};
-					finalPairs.put(switchPair, source);
+					finalPairs.put(entry, source);
 				} else {
-					IOFSwitch[] switchPair = {dest, source};
-					finalPairs.put(switchPair, pred.get(dest));
+					finalPairs.put(entry, pred.get(dest));
 				}
 			}
 			
