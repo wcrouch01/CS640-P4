@@ -388,7 +388,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 					oac.setPort(host.getPort());
 				}
 				else{
-					IOFSwitch[] pair = {swi, cs};
+					IOFSwitch[] pair = {cs, swi};
 					//
 					String src = swi.getStringId();
 					String dest = cs.getStringId();
