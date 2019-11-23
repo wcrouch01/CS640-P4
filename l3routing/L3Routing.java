@@ -449,7 +449,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 			IOFSwitch[] key = entry.getKey();
 			String src = key[0].getStringId();
 			String dest = key[1].getStringId();
-			String next = entry.getValue().getStringId();
+			String next = entry.getValue() == null ? "null" : entry.getValue().getStringId();
 			System.out.println("Entry: Src: " + src + " Dest: " + dest + " Next: " + next);
 		}
 	}
