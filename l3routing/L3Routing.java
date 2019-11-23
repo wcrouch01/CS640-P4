@@ -389,6 +389,11 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 				}
 				else{
 					IOFSwitch[] pair = {swi, cs};
+					//
+					String src = swi.getStringId();
+					String dest = cs.getStringId();
+					System.out.println("Entry: Src: " + src + " Dest: " + dest);
+					//
 					IOFSwitch ns = graph.get(pair);
 					int port = PortGet(swi, ns);
 					if (port == 0) { 
