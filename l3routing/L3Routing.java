@@ -496,7 +496,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 					// finalPairs.put(entry, source);
 					continue;
 				} else {
-					IOFSwitch next = pred.get(dest);
+					IOFSwitch next = pred.get(source);
 					if (next == source) {
 						finalPairs.put(entry, dest);
 					} else {
