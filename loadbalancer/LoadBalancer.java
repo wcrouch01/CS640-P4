@@ -171,6 +171,7 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 		OFMatch blank = new OFMatch();
 		inst = new ArrayList<OFInstruction>();
 		inst.add(new OFInstructionGotoTable(L3Routing.table));
+		System.out.println("install rule in InstallRule");
 		SwitchCommands.installRule(sw, table, SwitchCommands.DEFAULT_PRIORITY, blank, inst);
 
 	}
@@ -286,7 +287,7 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 		instructions.add(new OFInstructionApplyActions(actions));
 		//add the default case
 		instructions.add(new OFInstructionGotoTable(L3Routing.table));
-
+		System.out.println("install rule in TCPIN");
 		SwitchCommands.installRule(sw, table, (short)(SwitchCommands.DEFAULT_PRIORITY + 2), mc,
 				instructions, SwitchCommands.NO_TIMEOUT, IDLE_TIMEOUT);
 	}
@@ -312,6 +313,7 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 		List<OFInstruction> instructions = new ArrayList<OFInstruction>();
 		instructions.add(new OFInstructionApplyActions(actions));
 		//add the default case
+		System.out.println("install rule in TCPOUT");
 		instructions.add(new OFInstructionGotoTable(L3Routing.table));
 		SwitchCommands.installRule(sw, table, (short)(SwitchCommands.DEFAULT_PRIORITY + 2), mc,
 				instructions, SwitchCommands.NO_TIMEOUT, IDLE_TIMEOUT);
