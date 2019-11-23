@@ -428,6 +428,7 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 
 	public int PortGet(IOFSwitch switch1, IOFSwitch switch2){
 		if (switch1 == null || switch2 == null) {
+			System.out.println("PortGet inputs a null value" + switch1 + switch2);
 			return -1;
 		}
 
@@ -492,9 +493,15 @@ public class L3Routing implements IFloodlightModule, IOFSwitchListener,
 			for(IOFSwitch dest : getSwitches().values()){
 				String entry = source.getStringId() + "=>" + dest.getStringId();
 				if (dest == source) {
-					finalPairs.put(entry, source);
+					// finalPairs.put(entry, source);
+					continue;
 				} else {
-					finalPairs.put(entry, pred.get(dest));
+					IOFSwitch next = pred.get(dest);
+					if (next == source) {
+						finalPairs.put(entry, dest);
+					} else {
+						finalPairs.put(entry, next);
+					}
 				}
 			}
 			
