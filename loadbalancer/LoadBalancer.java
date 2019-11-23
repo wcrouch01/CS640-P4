@@ -153,7 +153,8 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 	//Added Method
 	public void installRules(IOFSwitch sw)
 	{
-		List<OFInstruction> inst = null;
+		List<OFInstruction> inst = new ArrayList<OFInstruction>();
+
 		//install a rule for each keySet (1 and 2)
 		for(Integer vIP : instances.keySet())
 		{
