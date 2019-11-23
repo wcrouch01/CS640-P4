@@ -164,13 +164,13 @@ public class LoadBalancer implements IFloodlightModule, IOFSwitchListener,
 			OFActionOutput action = new OFActionOutput(OFPort.OFPP_CONTROLLER);
 			List<OFAction> actions = new ArrayList<OFAction>();
 			actions.add(action);
-			inst = new ArrayList<OFInstruction>();
+			ArrayList<OFInstruction> inst = new ArrayList<OFInstruction>();
 			inst.add(new OFInstructionApplyActions(actions));
 			SwitchCommands.installRule(sw, table,(short) (SwitchCommands.DEFAULT_PRIORITY + 1), mc, inst);
 		}
 		//install blank rules for the rest (3)
 		OFMatch blank = new OFMatch();
-		inst = new ArrayList<OFInstruction>();
+		ArrayList<OFInstruction> inst = new ArrayList<OFInstruction>();
 		inst.add(new OFInstructionGotoTable(L3Routing.table));
 		SwitchCommands.installRule(sw, table, SwitchCommands.DEFAULT_PRIORITY, blank, inst);
 
